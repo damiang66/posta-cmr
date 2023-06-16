@@ -5,12 +5,22 @@ import axios from "axios";
 
 const url ='http://ec2-3-141-31-192.us-east-2.compute.amazonaws.com:8080/clients'
 export const clienteFindAll= async(page)=>{
+    console.log('todos');
     try {
-        return await axios.get(`${url}/paginar/${0}`);
+        return await axios.get(`${url}/paginar/${page}`);
     } catch (error) {
-        
+       throw error; 
     }
 }
+export const clienteFindByGenero=async(page,genero)=>{
+    console.log(genero);
+    try {
+        return await axios.get(`${url}/gender/${page}?gender=${genero}`)
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const clienteEmprendedorSave =async(emprendedor)=>{
     const{
         name,
@@ -94,6 +104,7 @@ export const clienteEmpresaSave=async(empresa)=>{
         numberMercantilRegistry,
         nit
     } = empresa;
+    console.log(disability);
     
     try {
         return await axios.post(`${url}/businessman`,{

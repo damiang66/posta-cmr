@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { clienteEmprendedorSave } from '../service/ClienteService';
 import Swal from 'sweetalert2';
 export const EmprendedorForm = ()=>{
 
-
+const navegar= useNavigate();
  
         const [formData, setFormData] = useState({
           name: '',
@@ -39,7 +39,7 @@ export const EmprendedorForm = ()=>{
         const GenderOptions = [
           { value: "MALE", label: "Male" },
           { value: "FEMALE", label: "Female" },
-          { value: "OTHER", label: "Other" },
+          { value: "LGTBQ", label: "LGTBQ+" },
         ];
       
         const StudyLevelOptions = [
@@ -109,6 +109,7 @@ export const EmprendedorForm = ()=>{
         const respuesta = await clienteEmprendedorSave(formData);
         Swal.fire('Creado:',`El Emprendedor ${respuesta.data.name} fue creado con exito`, 'success');
         console.log(respuesta);
+        navegar('/clientes')
      } catch (error) {
         console.log(error);
      }
@@ -189,6 +190,7 @@ export const EmprendedorForm = ()=>{
                       </div>
       
                       <div style={{ flexBasis: '50%' }}>
+                      disability
                         Discapacidad:
                         <select name="gender" value={formData.disability} onChange={handleChange} required>
                           <option value="">Select</option>

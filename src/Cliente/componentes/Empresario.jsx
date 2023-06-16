@@ -2,7 +2,9 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { clienteEmpresaSave } from './../service/ClienteService';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 export const Empresario = ({ onClose, onRegister }) => {
+    const navegar = useNavigate();
 
     const [formData, setFormData] = useState({
        /* name: '',
@@ -43,7 +45,7 @@ export const Empresario = ({ onClose, onRegister }) => {
     const GenderOptions = [
         { value: "MALE", label: "Male" },
         { value: "FEMALE", label: "Female" },
-        { value: "OTHER", label: "Other" },
+        { value: "LGTBQ", label: "LGTBQ+" },
     ];
 
     const StudyLevelOptions = [
@@ -129,6 +131,7 @@ try {
     const respuesta = await clienteEmpresaSave(formData);
     Swal.fire('Creado:',`El Empresario ${respuesta.data.name} fue creado con exito`, 'success');
     console.log(respuesta);
+    navegar('/clientes')
 } catch (error) {
     console.log(error);
 }

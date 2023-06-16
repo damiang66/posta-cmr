@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { ContactEdit } from "./ContactEdit";
 import { NavLink } from "react-router-dom";
 import Swal from "sweetalert2";
+import { clienteFindAll, clienteFindByGenero } from "../service/ClienteService";
 
 export const ClienteList=()=>{
     const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [registeredContact, setRegisteredContact] = useState(null);
   const [formData, setFormData] = useState({});
+  const[tipo,setTipo]=useState(false);
+  const[genero,setGenero]=useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [filterData, setFilterData] = useState({
     tipoCliente: '',
@@ -19,10 +22,20 @@ export const ClienteList=()=>{
   const [selectedContact, setSelectedContact] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModalOpenFilter, setIsModalOpenFilter] = useState(false)
+  const[activarFiltro,setActivarFiltro]=useState(false);
+  const [pagina,setPagina]=useState(0);
+  const[totalPagina,setTotalPagina]=useState(0);
+  const[valorGenero,setValorGenero]=useState('');
 
   useEffect(() => {
-    fetchRegisteredContact();
+  // fetchRegisteredContact();
+   traerTodos()
   }, []);
+  const GenderOptions = [
+    { value: "MALE", label: "Male" },
+    { value: "FEMALE", label: "Female" },
+    { value: "LGBTQ", label: "LGBTQ+" },
+];
 
   const fetchRegisteredContact = async () => {
     try {
@@ -40,6 +53,32 @@ export const ClienteList=()=>{
       console.error('Error al obtener los datos de la API:', error);
     }
   };
+  const traerTodos = async(pagina=0)=>{
+    console.log(pagina);
+    try {
+        const respuesta = await clienteFindAll(pagina);
+        console.log(respuesta);
+        setTotalPagina(respuesta.data.totalPages)
+        setRegisteredContact(respuesta.data.content);
+    } catch (error) {
+        console.log(error);
+    }
+  }
+  const cerrarFiltro= ()=>{
+    setActivarFiltro(false);
+    setGenero(false);
+   // setTipo(false);
+   traerTodos(0);
+  }
+  const cambiarFiltroGenero= async({target})=>{
+    const{value}=target;
+    setGenero(true);
+    //console.log(value);
+    setValorGenero(value);
+    const respuesta = await clienteFindByGenero(pagina=0,value);
+   // console.log(respuesta);
+    setRegisteredContact(respuesta.data.content);
+  }
 
   const handleOpenRegisterForm = () => {
     setShowRegisterForm(true);
@@ -60,11 +99,41 @@ export const ClienteList=()=>{
     setModalOpen(true);
     console.log(contact)
   };
+const paginarMas = async()=>{
+    console.log(totalPagina)
+    console.log(pagina);
+    if(pagina<=totalPagina){
+        setPagina(pagina+1);
+        
+        if(genero){
+            console.log('genero');
+            await clienteFindByGenero(pagina,valorGenero);
+        }else{
+            console.log('todos');
+            await traerTodos(pagina);
 
+        }
+    }
+   
+}
+const paginarMenos= async()=>{
+    if (pagina>=0){
+        setPagina(pagina-1);
+        if(genero){
+            console.log('genero');
+            await clienteFindByGenero(pagina,valorGenero);
+        }else{
+            console.log('todos');
+            await traerTodos(pagina);
+
+        }
+    }
+}
   const handleOpenModalFilter = () => {
    // setIsModalOpenFilter(true);
  //   console.log('este es', handleOpenModalFilter)
- Swal.fire('En reparacion', 'Esta seccion esta en reparacion', 'success')
+ //Swal.fire('En reparacion', 'Esta seccion esta en reparacion', 'success')
+ setActivarFiltro(true);
   }
 
   const handleCloseModal = () => {
@@ -74,7 +143,9 @@ export const ClienteList=()=>{
   const handleCloseModalFilter = () => {
     setIsModalOpenFilter(false);
   }
+
     return (<>
+  
     <div className="content-wrapper">
       <div className="banner" style={{ backgroundColor: '#abb8c3', color: 'white', padding: '20px', textAlign: 'center', borderRadius: 20 }}>
         BANNER
@@ -86,19 +157,47 @@ export const ClienteList=()=>{
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right" style={{ position: 'absolute' }}>
                 <h1 className="m-0" style={{ fontWeight: 'bold' }}>Contactos</h1>
-                <i className="fa fa-filter" aria-hidden="true" onClick={() => handleOpenModalFilter()} />
+                <i className="fa fa-filter m-2" aria-hidden="true" onClick={() => handleOpenModalFilter()} />
               </ol>
+
             </div>
+            
+
+        
+
+
+
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <NavLink to="/clientes/form"  style={{ borderRadius: 19, backgroundColor: '#00ff87' }} className="btn btn-success">
                   Nuevo Contacto +
                 </NavLink>
               </ol>
+              {activarFiltro&&( <div className="container">
+            <label>
+                        Gender:
+                     
+                        <select class="form-select" name="gender" onChange={cambiarFiltroGenero}  >
+                            <option value="">Select</option>
+                            {GenderOptions.map((option) => (
+                                <option  key={option.value} value={option.value}  >
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    <button onClick={()=>cerrarFiltro()} className="btn btn-danger btn-sm m-4">X</button>
+            </div>)}
+           
+
             </div>
           </div>
         </div>
       </div>
+      {pagina<0?'':( <button onClick={paginarMenos} className="btn btn-primary btn-sm">atras</button>)}
+     
+      {pagina>=totalPagina?'':( <button onClick={paginarMas} className="btn btn-primary btn-sm m-3">adelante</button>)}
+     
       {/* Main content */}
       <div className="content">
         <div className="container-fluid">
@@ -156,5 +255,6 @@ export const ClienteList=()=>{
 
 
     </div>
+
     </>)
 }
